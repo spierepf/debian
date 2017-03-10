@@ -9,6 +9,9 @@ apt_mirror="http://archive.debian.org/debian"
 variant="minbase"
 docker_image="debian-$suite-$variant-$arch"
 
+### update package lists
+apt-get update -y
+
 ### make sure that the required tools are installed
 apt-get install -y docker.io debootstrap dchroot
 
@@ -21,7 +24,9 @@ cat <<EOF > $chroot_dir/etc/apt/sources.list
 deb $apt_mirror $suite main contrib non-free
 #deb $apt_mirror $suite-updates main contrib non-free
 deb http://security.debian.org/ $suite/updates main contrib non-free
+deb http://www.emdebian.org/debian/ $suite main
 EOF
+cat $chroot_dir/etc/apt/sources.list | sed s/deb/deb-src/ >> $chroot_dir/etc/apt/sources.dir
 
 ### upgrade packages
 chroot $chroot_dir apt-get update
