@@ -3,22 +3,23 @@
 
 ### settings
 arch=i386
-suite=${1:-jessie}
+suite=${1:-squeeze}
 chroot_dir="/var/chroot/$suite"
-apt_mirror="http://http.debian.net/debian"
-docker_image="32bit/debian:$suite"
+apt_mirror="http://archive.debian.org/debian"
+variant="minbase"
+docker_image="debian-$suite-$variant-$arch"
 
 ### make sure that the required tools are installed
 apt-get install -y docker.io debootstrap dchroot
 
 ### install a minbase system with debootstrap
 export DEBIAN_FRONTEND=noninteractive
-debootstrap --arch $arch $suite $chroot_dir $apt_mirror
+debootstrap --arch $arch --variant $variant $suite $chroot_dir $apt_mirror
 
 ### update the list of package sources
 cat <<EOF > $chroot_dir/etc/apt/sources.list
 deb $apt_mirror $suite main contrib non-free
-deb $apt_mirror $suite-updates main contrib non-free
+#deb $apt_mirror $suite-updates main contrib non-free
 deb http://security.debian.org/ $suite/updates main contrib non-free
 EOF
 
