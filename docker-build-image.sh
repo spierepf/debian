@@ -2,7 +2,7 @@
 ### Build a docker image for debian i386.
 
 ### settings
-arch=i386
+arch=armel
 suite=${1:-squeeze}
 chroot_dir="/var/chroot/$suite"
 apt_mirror="http://archive.debian.org/debian"
@@ -13,7 +13,11 @@ docker_image="debian-$suite-$variant-$arch"
 apt-get update -y
 
 ### make sure that the required tools are installed
-apt-get install -y docker.io debootstrap dchroot
+apt-get install -y docker.io debootstrap dchroot qemu qemu-user-static binfmt-support
+
+update-binfmts --display
+mkdir -p $chroot_dir/usr/bin
+cp /usr/bin/qemu-arm-static $chroot_dir/usr/bin
 
 ### install a minbase system with debootstrap
 export DEBIAN_FRONTEND=noninteractive
@@ -24,7 +28,6 @@ cat <<EOF > $chroot_dir/etc/apt/sources.list
 deb $apt_mirror $suite main contrib non-free
 #deb $apt_mirror $suite-updates main contrib non-free
 deb http://security.debian.org/ $suite/updates main contrib non-free
-deb http://www.emdebian.org/debian/ $suite main
 EOF
 cat $chroot_dir/etc/apt/sources.list | sed s/deb/deb-src/ >> $chroot_dir/etc/apt/sources.list
 
