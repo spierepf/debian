@@ -1,23 +1,35 @@
 #!/bin/bash -x
 ### Build a docker image for debian i386.
 
+if [ -e "/tmp/config.sh" ]
+then
+    source /tmp/config.sh
+fi
+
 ### settings
-arch=armel
+arch=${arch:-`uname -m`}
 suite=${1:-squeeze}
-chroot_dir="/var/chroot/$suite"
 apt_mirror="http://archive.debian.org/debian"
 variant="minbase"
 docker_image="debian-$suite-$variant-$arch"
+chroot_dir="/var/chroot/$docker_image"
 
 ### update package lists
 apt-get update -y
 
 ### make sure that the required tools are installed
-apt-get install -y docker.io debootstrap dchroot qemu qemu-user-static binfmt-support
+apt-get install -y docker.io debootstrap dchroot
 
-update-binfmts --display
-mkdir -p $chroot_dir/usr/bin
-cp /usr/bin/qemu-arm-static $chroot_dir/usr/bin
+case $arch in
+i386|x86_64)
+    ;;
+armel)
+    apt-get install -y qemu qemu-user-static binfmt-support
+    update-binfmts --display
+    mkdir -p $chroot_dir/usr/bin
+    cp /usr/bin/qemu-arm-static $chroot_dir/usr/bin
+    ;;
+esac
 
 ### install a minbase system with debootstrap
 export DEBIAN_FRONTEND=noninteractive
